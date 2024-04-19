@@ -27,17 +27,21 @@ def get_available_devices():
 
     FNULL = open(os.devnull, 'w')
 
-    available_devices = []
-    for i in range(num_devices):
-        try:
-            if b"NVIDIA" in subprocess.check_output(
-                ["{}/test_device".format(executable_path),
-                 str(i)], stderr=FNULL):
-                available_devices.append(i)
-                logging.info('Device {} is available for rendering'.format(i))
-        except subprocess.CalledProcessError as e:
-            logging.info(e)
-            logging.info('Device {} is not available for rendering'.format(i))
+    egl_device_id = os.getenv("MUJOCO_EGL_DEVICE_ID")
+    if egl_device_id is not None:
+        available_devices = [int(egl_device_id)]
+    else:
+        available_devices = []
+        for i in range(num_devices):
+            try:
+                if b"NVIDIA" in subprocess.check_output(
+                    ["{}/test_device".format(executable_path),
+                    str(i)], stderr=FNULL):
+                    available_devices.append(i)
+                    logging.info('Device {} is available for rendering'.format(i))
+            except subprocess.CalledProcessError as e:
+                logging.info(e)
+                logging.info('Device {} is not available for rendering'.format(i))
     FNULL.close()
 
     return available_devices
